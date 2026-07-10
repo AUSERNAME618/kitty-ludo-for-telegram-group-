@@ -86,6 +86,9 @@ async def on_possible_mode_pick(update: Update, context: ContextTypes.DEFAULT_TY
                                 [InlineKeyboardButton("شروع بازی ▶️", callback_data="startgame")]])
     await update.message.reply_text(f"لابی منچ ساخته شد ({label}).\nهرکی بازی می‌کنه بزنه «بزن بریم».",
                                       reply_markup=kb)
+
+
+async def cmd_newmench(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     if load_game(chat_id):
         await update.message.reply_text("یه بازی همین الان تو این چت در حاله. اول با /endmench تمومش کن.")
