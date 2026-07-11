@@ -1,22 +1,19 @@
 import random
 
-RING_LENGTH = 40  # matches board_geometry.py (confirmed: 4-cell arms, 6x6 yards)
+RING_LENGTH = 36  # matches board_geometry.py (4 pinwheel-corner cells removed per user feedback)
 HOME_STRETCH = 4
-TOTAL_STEPS = RING_LENGTH - 1 + HOME_STRETCH  # 43
+TOTAL_STEPS = RING_LENGTH - 1 + HOME_STRETCH  # 39
 EXIT_ROLLS = {1, 6}
 
-START_OFFSET = {"Blue": 0, "Red": 10, "Green": 20, "Yellow": 30}
+START_OFFSET = {"Blue": 0, "Red": 9, "Green": 18, "Yellow": 27}
 
 
 def safe_cells_for(safe_mode):
     if not safe_mode:
         return set()
-    cells = set()
-    for start in START_OFFSET.values():
-        cells.add((start + 5) % RING_LENGTH)       # safe A: 5 after exit
-        cells.add((start + 7) % RING_LENGTH)       # safe B: 2 after safe A
-        cells.add((start - 1) % RING_LENGTH)        # safe C: 1 before this color's own start
-    return cells
+    # exact ring indices the user marked (orange circles) on the real board image:
+    # the fishbone tip, bowl, and spawn-paw cells of every arm -- 12 cells total
+    return {0, 5, 7, 9, 14, 16, 18, 23, 25, 27, 32, 34}
 
 
 class Piece:
