@@ -9,18 +9,20 @@ YARD = 4
 ARM = 4
 CENTER = 3
 
-RING_LENGTH = 40
+RING_LENGTH = 36
 HOME_STRETCH = 4
-TOTAL_STEPS = (RING_LENGTH - 1) + HOME_STRETCH  # 43
+TOTAL_STEPS = (RING_LENGTH - 1) + HOME_STRETCH  # 39
 
-START_OFFSET = {"Blue": 0, "Red": 10, "Green": 20, "Yellow": 30}
+START_OFFSET = {"Blue": 0, "Red": 9, "Green": 18, "Yellow": 27}
 
+# the 4 pinwheel-corner cells were removed per user feedback -- pieces now jump
+# directly between the two arm cells that used to flank each corner
 RING_ORDER = [
-    (4, 1), (4, 2), (4, 3), (4, 4), (3, 4), (2, 4), (1, 4), (0, 4),
-    (0, 5), (0, 6), (1, 6), (2, 6), (3, 6), (4, 6), (4, 7), (4, 8),
-    (4, 9), (4, 10), (5, 10), (6, 10), (6, 9), (6, 8), (6, 7), (6, 6),
-    (7, 6), (8, 6), (9, 6), (10, 6), (10, 5), (10, 4), (9, 4), (8, 4),
-    (7, 4), (6, 4), (6, 3), (6, 2), (6, 1), (6, 0), (5, 0), (4, 0),
+    (4, 1), (4, 2), (4, 3), (3, 4), (2, 4), (1, 4), (0, 4), (0, 5),
+    (0, 6), (1, 6), (2, 6), (3, 6), (4, 7), (4, 8), (4, 9), (4, 10),
+    (5, 10), (6, 10), (6, 9), (6, 8), (6, 7), (7, 6), (8, 6), (9, 6),
+    (10, 6), (10, 5), (10, 4), (9, 4), (8, 4), (7, 4), (6, 3), (6, 2),
+    (6, 1), (6, 0), (5, 0), (4, 0),
 ]
 assert len(RING_ORDER) == RING_LENGTH
 
