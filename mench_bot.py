@@ -40,6 +40,16 @@ def mention(user_id: int, name: str) -> str:
     return f'<a href="tg://user?id={user_id}">{name}</a>'
 
 
+def schedule_delete(context: ContextTypes.DEFAULT_TYPE, chat_id, message_id, delay=10):
+    if context.job_queue is None:
+        log.error("job_queue is None -- install with: pip install 'python-telegram-bot[job-queue]'")
+        return
+    context.job_queue.run_once(
+        lambda ctx: ctx.bot.delete_message(chat_id=chat_id, message_id=message_id),
+        when=delay,
+    )
+
+
 import uuid
 from telegram import InlineQueryResultArticle, InputTextMessageContent
 
@@ -173,10 +183,13 @@ async def on_dice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     current_color = game.current.color
     expected_user_id = player_user_ids[current_color]
 
-    # only accept a dice roll from the current player, replying to the active board message
+    # only accept a dice roll from the current player, replying to the active board message;
+    # anyone else's mistaken roll still gets cleaned up after 10s so it doesn't clutter the chat
     if update.effective_user.id != expected_user_id:
+        schedule_delete(context, chat_id, update.message.message_id)
         return
     if not update.message.reply_to_message or update.message.reply_to_message.message_id != board_message_id:
+        schedule_delete(context, chat_id, update.message.message_id)
         return
 
     value = update.message.dice.value
@@ -287,13 +300,7 @@ async def finish_turn(chat_id, game, player_names, player_user_ids, old_board_me
         save_game(chat_id, game, new_msg_id, player_names, player_user_ids)
 
     if dice_message_id:
-        if context.job_queue is None:
-            log.error("job_queue is None -- install with: pip install 'python-telegram-bot[job-queue]'")
-        else:
-            context.job_queue.run_once(
-                lambda ctx: ctx.bot.delete_message(chat_id=chat_id, message_id=dice_message_id),
-                when=10,
-            )
+        schedule_delete(context, chat_id, dice_message_id)
 
 
 async def cmd_endmench(update: Update, context: ContextTypes.DEFAULT_TYPE):
