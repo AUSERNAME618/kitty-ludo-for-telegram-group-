@@ -1,4 +1,0 @@
-python-telegram-bot
-Pillow
-psycopg2-binary
-aiohttp
