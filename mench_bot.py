@@ -243,6 +243,35 @@ async def on_piece_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
                        dice_message_id, value, context, finished)
 
 
+async def update_board_message(chat_id, game, player_names, player_user_ids, old_board_message_id,
+                                 context, extra_caption=""):
+    """Normally edits the existing board photo in place. Only every 5th turn does
+    it delete + resend to jump back to the bottom of the chat."""
+    game.turns_since_repost += 1
+    color = game.current.color
+    uid = player_user_ids[color]
+    name = player_names[color]
+    caption = (extra_caption + "\n" if extra_caption else "") + f"نوبت بازیکن {mention(uid, name)} — تاس بنداز 🎲"
+    png = render_game_png(game)
+
+    if game.turns_since_repost < 5:
+        try:
+            media = InputMediaPhoto(media=png, caption=caption, parse_mode="HTML")
+            await context.bot.edit_message_media(chat_id=chat_id, message_id=old_board_message_id, media=media)
+            return old_board_message_id
+        except Exception:
+            log.exception("edit_message_media failed, falling back to repost")
+
+    # every 5th turn (or if the edit above failed): repost at the bottom
+    game.turns_since_repost = 0
+    msg = await context.bot.send_photo(chat_id=chat_id, photo=png, caption=caption, parse_mode="HTML")
+    try:
+        await context.bot.delete_message(chat_id=chat_id, message_id=old_board_message_id)
+    except Exception:
+        pass
+    return msg.message_id
+
+
 async def finish_turn(chat_id, game, player_names, player_user_ids, old_board_message_id,
                        dice_message_id, value, context, finished):
     if finished:
@@ -252,15 +281,10 @@ async def finish_turn(chat_id, game, player_names, player_user_ids, old_board_me
                                        caption=f"🏆 {winner_name} برنده شد!")
         delete_game(chat_id)
     else:
-        prev_color = None
         extra_caption = f"تاس: {value}"
-        new_msg_id = await post_board(chat_id, game, player_names, player_user_ids, context,
-                                        extra_caption=extra_caption)
+        new_msg_id = await update_board_message(chat_id, game, player_names, player_user_ids,
+                                                   old_board_message_id, context, extra_caption)
         save_game(chat_id, game, new_msg_id, player_names, player_user_ids)
-        try:
-            await context.bot.delete_message(chat_id=chat_id, message_id=old_board_message_id)
-        except Exception:
-            pass
 
     if dice_message_id:
         if context.job_queue is None:
