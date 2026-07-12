@@ -59,6 +59,7 @@ class Game:
         self.quick_mode = quick_mode
         self.safe_mode = safe_mode
         self.safe_cells = safe_cells_for(safe_mode)
+        self.turns_since_repost = 0
 
     @property
     def current(self):
@@ -69,11 +70,15 @@ class Game:
 
     def movable_pieces(self, dice):
         moves = []
+        # your own start cell can only hold one piece -- if one of your pieces is
+        # already sitting there (progress==1), you can't exit another one; that
+        # piece just becomes a normal movable piece via the elif branch below
+        start_occupied = any(p.progress == 1 for p in self.current.pieces)
         for i, piece in enumerate(self.current.pieces):
             if piece.finished:
                 continue
             if piece.in_yard:
-                if dice in EXIT_ROLLS:
+                if dice in EXIT_ROLLS and not start_occupied:
                     moves.append(i)
             elif piece.progress + dice <= TOTAL_STEPS:
                 moves.append(i)
