@@ -1,1 +1,0 @@
-# kitty-ludo-for-telegram-group-
